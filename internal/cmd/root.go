@@ -20,7 +20,7 @@ bar and supports configuration files.`,
   gogetit download https://example.com/file1.zip https://example.com/file2.zip
 
   # Scrape website metadata
-  gogetit scrape http://example.com`,
+  gogetit scrape https://example.com`,
 }
 
 func Execute() error {
