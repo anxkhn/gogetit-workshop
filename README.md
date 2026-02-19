@@ -37,7 +37,7 @@ go mod download
 # Build the binary
 go build -o gogetit ./cmd/gogetit
 
-# Download files concurrrently
+# Download files concurrently
 ./gogetit download https://example.com/file1.zip https://example.com/file2.pdf
 
 # Scrape website metadata
