@@ -189,3 +189,35 @@ This is useful for small fixes and documentation improvements without setting up
 ## License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## Quick Reference
+
+### Download Command
+```bash
+./gogetit download <url> [urls...]
+```
+
+Flags:
+- `-o, --output-dir` - Output directory (default: current)
+- `-c, --concurrency` - Number of concurrent downloads (default: 3)
+- `-t, --timeout` - Timeout in seconds (default: 30)
+- `-r, --retry` - Number of retry attempts (default: 3)
+
+### Scrape Command
+```bash
+./gogetit scrape <url> [urls...]
+```
+
+### Examples
+```bash
+# Download a single file
+./gogetit download https://example.com/file.zip
+
+# Download multiple files with custom concurrency
+./gogetit download -c 5 https://example.com/file1.zip https://example.com/file2.zip
+
+# Scrape metadata from a website
+./gogetit scrape https://example.com
+```
