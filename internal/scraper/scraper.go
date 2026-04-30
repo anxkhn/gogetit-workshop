@@ -75,6 +75,13 @@ func (s *Scraper) Scrape(ctx context.Context, url string) (*Metadata, error) {
 
 	var parseNode func(*html.Node)
 	parseNode = func(n *html.Node) {
+		// Bail early if the caller's context has been cancelled (timeout
+		// or interrupt). Without this, recursive goroutines keep walking
+		// the tree long after the request has been abandoned.
+		if ctx.Err() != nil {
+			return
+		}
+
 		if n.Type == html.ElementNode {
 			switch n.Data {
 			case "title":
@@ -101,6 +108,9 @@ func (s *Scraper) Scrape(ctx context.Context, url string) (*Metadata, error) {
 		}
 
 		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			if ctx.Err() != nil {
+				return
+			}
 			parseWg.Add(1)
 			go func(child *html.Node) {
 				defer parseWg.Done()
@@ -117,6 +127,9 @@ func (s *Scraper) Scrape(ctx context.Context, url string) (*Metadata, error) {
 
 	parseWg.Wait()
 
+	if err := ctx.Err(); err != nil {
+		return nil, err
+	}
 	return metadata, nil
 }
 

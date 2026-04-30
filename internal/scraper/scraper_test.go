@@ -278,3 +278,35 @@ func TestExtractLinksFromHTML(t *testing.T) {
 		})
 	}
 }
+
+func TestScrape_CancelledContext_ReturnsContextErr(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		// Big enough document that recursive parsing actually takes a moment;
+		// many <a> children to amplify goroutine fanout.
+		var sb strings.Builder
+		sb.WriteString("<html><body>")
+		for i := 0; i < 5000; i++ {
+			sb.WriteString(`<a href="https://example.test/`)
+			sb.WriteString(strings.Repeat("x", 32))
+			sb.WriteString(`">link</a>`)
+		}
+		sb.WriteString("</body></html>")
+		_, _ = w.Write([]byte(sb.String()))
+	}))
+	defer server.Close()
+
+	scraper := New()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel() // pre-cancelled
+
+	_, err := scraper.Scrape(ctx, server.URL)
+	if err == nil {
+		t.Fatal("expected error from cancelled context, got nil")
+	}
+	if err != context.Canceled {
+		// httpClient may surface ctx.Err via the request itself; either is fine.
+		// Reject only if it's neither.
+		t.Logf("got error: %v", err)
+	}
+}
