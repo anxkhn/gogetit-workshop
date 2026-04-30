@@ -76,8 +76,15 @@ func WriteFile(path string, data []byte) error {
 		return err
 	}
 
-	_, err = file.Write(data)
-	file.Close()
+	_, writeErr := file.Write(data)
+	closeErr := file.Close()
 
-	return err
+	// Surface the write error first when both fail — it's the
+	// actionable cause. A close error after a successful write still
+	// matters: buffered data may not have flushed and the file on
+	// disk would be silently truncated.
+	if writeErr != nil {
+		return writeErr
+	}
+	return closeErr
 }

@@ -215,3 +215,32 @@ func TestSanitizePath(t *testing.T) {
 		})
 	}
 }
+
+func TestWriteFile_RoundTrip(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "subdir", "out.bin")
+	want := []byte("hello, world\n")
+
+	if err := WriteFile(path, want); err != nil {
+		t.Fatalf("WriteFile returned error: %v", err)
+	}
+
+	got, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatalf("ReadFile returned error: %v", err)
+	}
+	if string(got) != string(want) {
+		t.Errorf("file contents: got %q, want %q", got, want)
+	}
+}
+
+func TestWriteFile_NoSilentClose(t *testing.T) {
+	// Sanity check: WriteFile must not blackhole both write and close
+	// errors. The success case is exercised by TestWriteFile_RoundTrip;
+	// here we just confirm that returning a write error from a bad path
+	// still propagates (CreateFile fails, we never reach Close).
+	err := WriteFile("/nonexistent\x00bad/path/file.bin", []byte("x"))
+	if err == nil {
+		t.Fatal("expected error for bad path, got nil")
+	}
+}
