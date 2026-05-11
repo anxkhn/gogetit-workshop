@@ -79,7 +79,7 @@ func WriteFile(path string, data []byte) error {
 	_, writeErr := file.Write(data)
 	closeErr := file.Close()
 
-	// Surface the write error first when both fail — it's the
+	// Surface the write error first when both fail, it's the
 	// actionable cause. A close error after a successful write still
 	// matters: buffered data may not have flushed and the file on
 	// disk would be silently truncated.
